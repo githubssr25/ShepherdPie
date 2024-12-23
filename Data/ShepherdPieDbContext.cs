@@ -5,7 +5,7 @@ using ShepherdPie.Models;
 
 namespace ShepherdPie.Data
 {
-    public class ShepherdPieDbContext : IdentityDbContext<IdentityUser> 
+    public class ShepherdPieDbContext : IdentityDbContext<User> 
     {
         private readonly IConfiguration _configuration;
 
@@ -49,20 +49,70 @@ namespace ShepherdPie.Data
     .HasForeignKey(p => p.OrderId) // Explicitly link the foreign key (important)
     .OnDelete(DeleteBehavior.Cascade); // If the order is deleted, delete its pizzas too
 
+    modelBuilder.Entity<Order>()
+    .HasOne(o => o.User) // Navigation property in Order
+    .WithMany(u => u.Orders) // Navigation property in User
+    .HasForeignKey(o => o.UserId) // Foreign key in Order
+    .OnDelete(DeleteBehavior.Cascade); // Cascade delete to remove orders when a user is deleted
 
-
+modelBuilder.Entity<User>().HasData(
+    new User 
+    { 
+        Id = "1", 
+        FirstName = "John", 
+        LastName = "Doe", 
+        UserName = "johndoe", 
+        Email = "johndoe@example.com", 
+        NormalizedUserName = "JOHNDOE", 
+        NormalizedEmail = "JOHNDOE@EXAMPLE.COM", 
+        PasswordHash = "AQAAAAIAAYagAAAAEGwWZZErNlBxXJ1NNiYZW/J6DjR/7VXDm21IvJYB0aA==" // Pre-hashed password
+    },
+    new User 
+    { 
+        Id = "2", 
+        FirstName = "Jane", 
+        LastName = "Smith", 
+        UserName = "janesmith", 
+        Email = "janesmith@example.com", 
+        NormalizedUserName = "JANESMITH", 
+        NormalizedEmail = "JANESMITH@EXAMPLE.COM", 
+        PasswordHash = "AQAAAAIAAYagAAAAEGwWZZErNlBxXJ1NNiYZW/J6DjR/7VXDm21IvJYB0aA==" 
+    },
+    new User 
+    { 
+        Id = "3", 
+        FirstName = "Alice", 
+        LastName = "Brown", 
+        UserName = "alicebrown", 
+        Email = "alicebrown@example.com", 
+        NormalizedUserName = "ALICEBROWN", 
+        NormalizedEmail = "ALICEBROWN@EXAMPLE.COM", 
+        PasswordHash = "AQAAAAIAAYagAAAAEGwWZZErNlBxXJ1NNiYZW/J6DjR/7VXDm21IvJYB0aA==" 
+    },
+    new User 
+    { 
+        Id = "4", 
+        FirstName = "Bob", 
+        LastName = "Johnson", 
+        UserName = "bobjohnson", 
+        Email = "bobjohnson@example.com", 
+        NormalizedUserName = "BOBJOHNSON", 
+        NormalizedEmail = "BOBJOHNSON@EXAMPLE.COM", 
+        PasswordHash = "AQAAAAIAAYagAAAAEGwWZZErNlBxXJ1NNiYZW/J6DjR/7VXDm21IvJYB0aA==" 
+    }
+);
 
             // Seed Orders
  // Seed Orders
 // Seed Orders with explicit DateTimeKind for OrderDate
 modelBuilder.Entity<Order>().HasData(
-    new Order { OrderId = 1, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-15T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 50.00m, OrderStatus = "Completed", TipLeftCustomer = 5.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 1, DeliveryPersonEmployeeId = 2 },
-    new Order { OrderId = 2, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-16T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 30.00m, OrderStatus = "Pending", TipLeftCustomer = 3.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 2, DeliveryPersonEmployeeId = 3 },
-    new Order { OrderId = 3, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-17T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 40.00m, OrderStatus = "Completed", TipLeftCustomer = 4.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 1, DeliveryPersonEmployeeId = 4 },
-    new Order { OrderId = 4, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-18T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 25.00m, OrderStatus = "Pending", TipLeftCustomer = 2.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 3, DeliveryPersonEmployeeId = 2 },
-    new Order { OrderId = 5, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-19T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 35.00m, OrderStatus = "Pending", TipLeftCustomer = 3.50m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 2, DeliveryPersonEmployeeId = 1 },
-    new Order { OrderId = 6, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-20T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 55.00m, OrderStatus = "Pending", TipLeftCustomer = 5.50m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 1, DeliveryPersonEmployeeId = 4 },
-    new Order { OrderId = 7, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-20T12:00:00Z"), DateTimeKind.Utc), TotalAmount = 20.00m, OrderStatus = "Pending", TipLeftCustomer = 1.50m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 3, DeliveryPersonEmployeeId = 2 }
+    new Order { OrderId = 1, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-15T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 50.00m, OrderStatus = "Completed", TipLeftCustomer = 5.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 1, DeliveryPersonEmployeeId = 2, UserId = "2" },
+    new Order { OrderId = 2, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-16T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 30.00m, OrderStatus = "Pending", TipLeftCustomer = 3.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 2, DeliveryPersonEmployeeId = 3, UserId = "4"},
+    new Order { OrderId = 3, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-17T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 40.00m, OrderStatus = "Completed", TipLeftCustomer = 4.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 1, DeliveryPersonEmployeeId = 4, UserId = "3" },
+    new Order { OrderId = 4, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-18T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 25.00m, OrderStatus = "Pending", TipLeftCustomer = 2.00m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 3, DeliveryPersonEmployeeId = 2, UserId = "1" },
+    new Order { OrderId = 5, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-19T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 35.00m, OrderStatus = "Pending", TipLeftCustomer = 3.50m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 2, DeliveryPersonEmployeeId = 1, UserId = "2" },
+    new Order { OrderId = 6, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-20T00:00:00Z"), DateTimeKind.Utc), TotalAmount = 55.00m, OrderStatus = "Pending", TipLeftCustomer = 5.50m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 1, DeliveryPersonEmployeeId = 4, UserId = "4" },
+    new Order { OrderId = 7, OrderDate = DateTime.SpecifyKind(DateTime.Parse("2024-12-20T12:00:00Z"), DateTimeKind.Utc), TotalAmount = 20.00m, OrderStatus = "Pending", TipLeftCustomer = 1.50m, DeliveryFee = 5.00m, OrderTakerEmployeeId = 3, DeliveryPersonEmployeeId = 2, UserId = "2" }
 );
 
 
