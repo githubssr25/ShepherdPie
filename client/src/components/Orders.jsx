@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import {getOrders} from '../manager/orderManager'
+import {getOrders, getOrderByDate} from '../manager/orderManager'
 import Calendar from "react-calendar";
 
 export const Orders = () => {
@@ -30,16 +30,29 @@ export const Orders = () => {
     console.log("did clickFunction do anything if so what is data", data);
   }
 
+const getOrdersByDate = async (selectedDate) => {
+    const formattedDate = selectedDate.toISOString().split("T")[0]; // Format date for backend
+    console.log("Formatted Date Sent to Backend:", formattedDate);
+    const ourResponse = await getOrderByDate(formattedDate);
+    console.log("what is our response when we do getOrdersByDate", ourResponse);
+    setOrders(ourResponse);
+}
+
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif", maxWidth: "800px", margin: "auto" }}>
       <h1 style={{ textAlign: "center", marginBottom: "20px" }}>View Orders</h1>
 
       {/* Calendar Section */}
+      <div>
       <div style={{ textAlign: "center", marginBottom: "30px" }}>
         <Calendar
           onChange={handleDateChange}
           value={selectedDate}
         />
+      </div>
+      <div>
+        <button onClick = {() => getOrdersByDate(selectedDate)}> Click This To Get Orders On Selected Date </button>
+      </div>
       </div>
 
       {/* Orders Section */}

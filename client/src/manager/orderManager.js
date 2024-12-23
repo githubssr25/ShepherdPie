@@ -17,6 +17,20 @@ export const getOrders = async () => {
   }
 };
 
+export const getOrderByDate = async (orderDate) => {
+  try {
+    console.log("Fetch URL:", `/api/order/by-date?date=${orderDate}`);
+    const response = await fetch (`http://localhost:5168/api/order/by-date?date=${orderDate}`);
+    if(!response.ok){
+      throw new Error ("Failed to fetch orders");
+    } else {
+      return await response.json();
+    } 
+  } catch (error) {
+    console.error("error fetching orders by date", error);
+  }
+}
+
   
   export const getOrderById = async (orderId) => {
     const response = await fetch(`/api/orders/${orderId}`);

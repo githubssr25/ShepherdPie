@@ -25,11 +25,15 @@ namespace ShepherdPie.Controllers
         [HttpGet]
         public IActionResult Get()
         {
+
+// var startOfDay = DateTime.UtcNow.Date;
+// var endOfDay = startOfDay.AddDays(1);
+
             var orders = _dbContext.Orders
                 .Include(o => o.OrderTaker)
                 .Include(o => o.DeliveryPerson)
                 .Include(o => o.Pizzas)
-                .Where(o => o.OrderDate.Date == DateTime.UtcNow.Date)
+                // .Where(o => o.OrderDate.ToUniversalTime() >= startOfDay && o.OrderDate.ToUniversalTime() < endOfDay)
                 .OrderByDescending(o => o.OrderDate)
                 .Select(o => new 
                 {
@@ -122,5 +126,37 @@ namespace ShepherdPie.Controllers
 
             return Ok(orderDTO);
         }
+
+        [HttpGet("by-date")]
+        public IActionResult GetByDate([FromQuery] DateTime date)
+        {
+            var startOfDay = date.Date.ToUniversalTime();
+            var endOfDay = startOfDay.AddDays(1);
+
+            Console.WriteLine($"Received Date: {date}");
+            var order = _dbContext.Orders
+               .Include(o => o.Pizzas)
+               .Include(o => o.OrderTaker)
+               .Include(o => o.DeliveryPerson)
+               .Where(o => o.OrderDate >= startOfDay && o.OrderDate < endOfDay)
+               .OrderByDescending(o => o.OrderDate.Date)
+               .ToList();
+
+            // date.Date: Converts date into 2024-12-15 00:00:00.
+            // date.Date.AddDays(1): Marks the end of the day (2024-12-16 00:00:00).
+            // Ensures all orders with a time from 00:00:00 to 23:59:59 are included.
+
+            return Ok(order);
+
+        }
+
+
+
+
     }
+
 }
+
+
+
+

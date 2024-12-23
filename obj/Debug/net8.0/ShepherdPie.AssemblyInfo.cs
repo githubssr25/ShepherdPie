@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ShepherdPie")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+086ccfac7d60f9213678dd2745152b5a7a900e1a")]
 [assembly: System.Reflection.AssemblyProductAttribute("ShepherdPie")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ShepherdPie")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -106,3 +106,4 @@
 /Users/simrathrandhawa/workspaceNSS/ShepherdPie/obj/Debug/net8.0/ShepherdPie.pdb
 /Users/simrathrandhawa/workspaceNSS/ShepherdPie/obj/Debug/net8.0/ShepherdPie.genruntimeconfig.cache
 /Users/simrathrandhawa/workspaceNSS/ShepherdPie/obj/Debug/net8.0/ref/ShepherdPie.dll
+/Users/simrathrandhawa/workspaceNSS/ShepherdPie/obj/Debug/net8.0/ShepherdPie.sourcelink.json
