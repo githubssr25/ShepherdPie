@@ -80,6 +80,11 @@ export const CreateOrder = () => {
   }
 
   const submitPizzaToOrder = () => {
+
+    if (!currentPizza.size) {
+      alert("Please select a pizza size before adding it to the order.");
+      return; // Stop the function execution
+    }
     setTotalPizzas((prevTotal) => [...prevTotal, currentPizza]);
     setCurrentPizza({
       size: "",
@@ -239,6 +244,7 @@ try {
                 type="checkbox"
                 value={condiment.condimentId}
                 onChange={(e) => addCondimentToPizza(e, condiment)}
+                checked={currentPizza.selectedCondiments.some(c => c.condimentId === condiment.condimentId)}
                 />
                 Condiment Name And Price: {condiment.condimentName} - {condiment.cost.toFixed(2)};
               </label>
