@@ -39,14 +39,23 @@ export const getOrderByDate = async (orderDate) => {
   };
   
   export const createOrder = async (orderData) => {
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderData),
-    });
-    if (!response.ok) throw new Error("Failed to create order");
-    return response.json();
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create order");
+      }
+      return response.json(); // Return created order details (or success message)
+    } catch (error) {
+      console.error("Error creating order:", error);
+      throw error;
+    }
   };
+  
   
   export const updateOrder = async (orderId, updatedData) => {
     const response = await fetch(`/api/orders/${orderId}`, {

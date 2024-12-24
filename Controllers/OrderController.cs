@@ -150,8 +150,44 @@ namespace ShepherdPie.Controllers
 
         }
 
+public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto createOrderDto)
+{
+    if (createOrderDto == null || !ModelState.IsValid)
+    {
+        return BadRequest("Invalid order data.");
+    }
 
+    // Create the Order object with cascading inserts
+    var ourOrder = new Order
+    {
+        OrderDate = createOrderDto.OrderDate,
+        TotalAmount = createOrderDto.TotalAmount,
+        OrderTakerEmployeeId = createOrderDto.OrderTakerEmployeeId,
+        DeliveryPersonEmployeeId = createOrderDto.DeliveryPersonEmployeeId,
+        UserId = createOrderDto.UserId,
+        OrderStatus = "Pending",
+        TipLeftCustomer = createOrderDto.TipLeftCustomer,
+        DeliveryFee = createOrderDto.DeliveryFee,
+        Pizzas = createOrderDto.Pizzas.Select(dtoPizza => new Pizza
+        {
+            Size = dtoPizza.Size,
+            BasePrice = dtoPizza.BasePrice,
+            PizzaCondiments = dtoPizza.CondimentIds.Select(condimentId => new PizzaCondiment
+            {
+                CondimentId = condimentId
+            }).ToList()
+        }).ToList()
+    };
 
+    // Add the Order to the database context
+    _dbContext.Orders.Add(ourOrder);
+
+    // Save changes to persist the data
+    await _dbContext.SaveChangesAsync();
+
+   // Return success response
+    return Ok(ourOrder);
+}
 
     }
 
