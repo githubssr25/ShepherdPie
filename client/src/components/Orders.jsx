@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import {getOrders, getOrderByDate} from '../manager/orderManager'
 import Calendar from "react-calendar";
+import { Link } from "react-router-dom";
 
 export const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -85,6 +86,12 @@ const getOrdersByDate = async (selectedDate) => {
                 ))
                 }
               </div>
+              <Link
+              to={`/orders/${order.orderId}/update`}
+              state={{ order }}
+              >
+                Edit Order 
+              </Link>
             </div>
           ))
         ) : (
