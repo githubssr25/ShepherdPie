@@ -74,3 +74,33 @@ export const getOrderByDate = async (orderDate) => {
     if (!response.ok) throw new Error(`Failed to delete order with ID: ${orderId}`);
   };
   
+
+  export const updatePizza = async (orderId, pizzaId, updatedPizzaDto) => {
+const apiUrl = `http://localhost:5168/api/order/${orderId}/pizzas/${pizzaId}`;
+
+try {
+  console.log(`Updating pizza at ${apiUrl} with data`, updatedPizzaDto);
+
+  const response = await fetch(apiUrl, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedPizzaDto),
+  });
+
+  if (!response.ok) {
+    console.error("Failed to update pizza:", response.status, response.statusText);
+    throw new Error("Failed to update pizza");
+  }
+
+  const updatedOrder = await response.json();
+  console.log("Pizza updated successfully:", updatedOrder);
+
+  return updatedOrder; // Return the updated order
+} catch (error) {
+  console.error("Error in updatePizza:", error);
+  throw error;
+
+
+
+}
+  }

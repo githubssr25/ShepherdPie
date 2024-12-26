@@ -1,4 +1,4 @@
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation} from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getOrderById, updateOrder } from "../manager/orderManager";
 import { getAllCondiments } from "../manager/condimentManager";
@@ -16,7 +16,6 @@ export const UpdateOrder = () => {
   const [employees, setEmployees] = useState([]);
   const [condiments, setCondiments] = useState([]);
   const [chosenDriver, setChosenDriver] = useState({});
-  const [addedPizza, setAddedPizza] = useState({});
 //   console.log("whatis value of order", order);
 
   const [pizzaSizes] = useState([

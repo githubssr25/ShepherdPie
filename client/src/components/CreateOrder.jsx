@@ -114,17 +114,26 @@ export const CreateOrder = () => {
     const deliveryFee = totalPizzas.length * 5;
     const tip = parseFloat(enteredTip || 0);
   
-    // Calculate the total amount (sum of pizza base prices, condiments, tip, and delivery fee)
-    const totalAmount = totalPizzas.reduce((sum, pizza) => {
-      const totalCost = pizza.basePrice;
+// Calculate the total amount (sum of pizza base prices, condiments, tip, and delivery fee)
+const totalAmount = totalPizzas.reduce((sum, pizza) => {
+  // Validate base price
+  const basePrice = pizza.basePrice || 0; // Default to 0 if basePrice is missing
 
-      const toppingPrice = pizza.selectedCondiments.reduce((sum, eachTopping) => {
-        return sum + eachTopping.cost;
-      }, 0);
-      return sum + totalCost + toppingPrice;
-    }, 0);
-    
-    const finalTotalAmount = totalAmount + deliveryFee + tip;
+  // Calculate topping price
+  const toppingPrice = pizza.selectedCondiments.reduce((toppingSum, condiment) => {
+    return toppingSum + (condiment.cost || 0); // Ensure each condiment has a valid cost
+  }, 0);
+
+  // Add base price and topping price for this pizza to the running total
+  return sum + basePrice + toppingPrice;
+}, 0);
+
+// Final total amount, including delivery fee and tip
+const finalTotalAmount = totalAmount + deliveryFee + tip;
+
+// console.log("Total Amount for Order:", totalAmount);
+// console.log("Final Total Amount (including delivery and tip):", finalTotalAmount);
+
 
 
   

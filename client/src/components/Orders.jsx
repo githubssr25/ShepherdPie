@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
-import {getOrders, getOrderByDate} from '../manager/orderManager'
+import {getOrders, getOrderByDate, getOrderById} from '../manager/orderManager'
+import { useLocation } from "react-router-dom";
 import Calendar from "react-calendar";
 import { Link } from "react-router-dom";
 
 export const Orders = () => {
+  const location = useLocation();
   const [orders, setOrders] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date()); // Default to today's date
+  const { orderIdForUpdate, pizzaIdForUpdate } = location.state || {};
+
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -20,6 +24,27 @@ export const Orders = () => {
 
     fetchOrders();
   }, [selectedDate]);
+
+
+  useEffect(() => {
+    const fetchUpdatedOrders = async () => {
+      if(!orderIdForUpdate){
+        const allOrders = await getOrders();
+        setOrders(allOrders);
+      } else {
+        const updatedOrder = await getOrderById(orderIdForUpdate);
+        setOrders((prevOrder) => {
+         return prevOrder.map((order) => {
+           if(order.orderId === updatedOrder.orderId) {
+            return updatedOrder;
+           } 
+           return order; //dont need an else for this 
+          })
+        });
+      }};
+
+    fetchUpdatedOrders();
+  }, [orderIdForUpdate, pizzaIdForUpdate]);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -77,11 +102,20 @@ const getOrdersByDate = async (selectedDate) => {
               <p><strong>Order Status:</strong> {order.orderStatus}</p>
               <p><strong>Delivery Name:</strong> {order.deliveryPerson.name}</p>
               <div>
+                <h1> Pizza Info </h1>
                 {order.pizzas.map((pizza, index) => (
                   <div key ={index}>
+              <p> <strong> Pizza Number {index} </strong></p>
               <p><strong>pizza ID:</strong> {pizza.pizzaId}</p>
               <p><strong>Base Price:</strong> {pizza.basePrice}</p>
               <p><strong>Size:</strong> ${pizza.size}</p>
+              <Link
+              to={`/orders/${order.orderId}/${pizza.pizzaId}/updatePizza`}
+
+              state={{ pizza, order }}
+              >
+                Edit Pizza
+              </Link>
                   </div>
                 ))
                 }
@@ -102,3 +136,4 @@ const getOrdersByDate = async (selectedDate) => {
     </div>
   );
 };
+//12-24 next step is use navigate we have to get the updated pizza bkac ot orders so orders actually displays and has updated pizza value 

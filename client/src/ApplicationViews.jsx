@@ -5,6 +5,7 @@ import  AuthorizedRoute from "./components/auth/AuthorizedRoute";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
 import {UpdateOrder} from "./components/UpdateOrder";
+import {UpdatePizza} from "./components/UpdatePizza";
 
 /* eslint-disable react/prop-types */
 export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
@@ -39,8 +40,17 @@ export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
             </AuthorizedRoute>
           }
           />
+          <Route
+          path=":orderId/:pizzaId/updatePizza"
+          element={
+            <AuthorizedRoute loggedInUser ={loggedInUser}>
+              <UpdatePizza />
+            </AuthorizedRoute>
+          }
+          />
+
         <Route
-          path="orders/create"
+          path="create"
           element={
             <AuthorizedRoute loggedInUser={loggedInUser}>
               <CreateOrder />

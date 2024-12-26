@@ -57,7 +57,14 @@ namespace ShepherdPie.Controllers
                     {
                         PizzaId = p.PizzaId,
                         Size = p.Size,
-                        BasePrice = p.BasePrice
+                        BasePrice = p.BasePrice,
+                        PizzaCondiments = p.PizzaCondiments.Where(pc => pc.PizzaId == p.PizzaId)
+                        .Select(pc1 => new {
+                            PizzaId = pc1.PizzaId,
+                            CondimentId = pc1.CondimentId,
+                            CondimentName = _dbContext.Condiments.FirstOrDefault(cond => cond.CondimentId == pc1.CondimentId).CondimentName,
+                            CondimentType = _dbContext.Condiments.FirstOrDefault(cond => cond.CondimentId == pc1.CondimentId).CondimentType,
+                        })
                     }).ToList()
                 })
                 .ToList();
@@ -74,6 +81,18 @@ namespace ShepherdPie.Controllers
         [HttpGet("{id}/pizzas")]
         public IActionResult GetById(int id)
         {
+
+            var condimentDictionary = _dbContext.Condiments
+            .ToDictionary(c => c.CondimentId);
+            //what this dictionary is now 
+//             {
+//     1: { CondimentId: 1, CondimentName: "Pepperoni", CondimentType: "Meat", Cost: 1.75 },
+//     2: { CondimentId: 2, CondimentName: "Buffalo Mozzarella", CondimentType: "Cheese", Cost: 1.25 },
+//     3: { CondimentId: 3, CondimentName: "Parmesan", CondimentType: "Cheese", Cost: 1.50 },
+//     4: { CondimentId: 4, CondimentName: "Mushroom", CondimentType: "Vegetable", Cost: 0.75 },
+// }
+
+
             var order = _dbContext.Orders
                 .Include(o => o.Pizzas)
                 .Include(o => o.OrderTaker)
@@ -85,7 +104,7 @@ namespace ShepherdPie.Controllers
                 return NotFound();
             }
 
-            var orderDTO = new 
+            var orderDTO = new
             {
                 OrderId = order.OrderId,
                 OrderDate = order.OrderDate,
@@ -93,34 +112,27 @@ namespace ShepherdPie.Controllers
                 OrderStatus = order.OrderStatus,
                 TipLeftCustomer = order.TipLeftCustomer,
                 DeliveryFee = order.DeliveryFee,
-                OrderTaker = order.OrderTaker != null ? new 
+                OrderTaker = order.OrderTaker != null ? new
                 {
                     EmployeeId = order.OrderTaker.EmployeeId,
                     Name = order.OrderTaker.Name
                 } : null,
-                DeliveryPerson = order.DeliveryPerson != null ? new 
+                DeliveryPerson = order.DeliveryPerson != null ? new
                 {
                     EmployeeId = order.DeliveryPerson.EmployeeId,
                     Name = order.DeliveryPerson.Name
                 } : null,
-                Pizzas = order.Pizzas.Select(p => new 
+                Pizzas = order.Pizzas.Select(p => new
                 {
                     PizzaId = p.PizzaId,
                     Size = p.Size,
                     BasePrice = p.BasePrice,
-                    Condiments = _dbContext.PizzaCondiments
-                        .Where(pc => pc.PizzaId == p.PizzaId)
-                        .Join(
-                            _dbContext.Condiments,
-                            pc => pc.CondimentId,
-                            c => c.CondimentId,
-                            (pc, c) => new 
-                            {
-                                CondimentId = c.CondimentId,
-                                CondimentName = c.CondimentName,
-                                CondimentType = c.CondimentType
-                            }
-                        ).ToList()
+                    Condiments = p.PizzaCondiments.Select(pc => new
+                    {
+                        CondimentId = pc.CondimentId,
+                        CondimentName = condimentDictionary[pc.CondimentId].CondimentName,
+                        CondimentType = condimentDictionary[pc.CondimentId].CondimentType
+                    }).ToList()
                 }).ToList()
             };
 
@@ -189,10 +201,112 @@ public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto createOrd
     return Ok(ourOrder);
 }
 
+
+
+[HttpPut("{orderId}/pizzas/{pizzaId}")]
+public IActionResult UpdatePizza(int orderId, int pizzaId, [FromBody] UpdatePizzaDto updatedPizza)
+{
+     var order = _dbContext.Orders
+    .Include(o => o.Pizzas)
+    .ThenInclude(p => p.PizzaCondiments)
+    .FirstOrDefault(o => o.OrderId == orderId);
+
+    if (order == null)
+    {
+        return NotFound("Order not found.");
+    }
+
+     // Find the pizza within the order
+    var pizza = order.Pizzas.FirstOrDefault(p => p.PizzaId == pizzaId);
+
+    if (pizza == null)
+    {
+        return NotFound("Pizza not found.");
+    }
+
+
+//old total cost
+var previousPizzaBasePrice = pizza.BasePrice;
+var previousPizzaCondimentCost= pizza.PizzaCondiments.Sum(pc => 
+_dbContext.Condiments.First(c => c.CondimentId == pc.CondimentId).Cost);
+
+var previousPizzaTotal = previousPizzaBasePrice + previousPizzaCondimentCost;
+
+//  pizza.PizzaCondiments: Collection of condiments for a pizza.
+// pc: Each condiment in pizza.PizzaCondiments.
+// _dbContext.Condiments.First(...): Finds the specific condiment by CondimentId in the Condiments table.
+// .Cost: Retrieves the cost of the matched condiment.
+// This sums up the costs of all condiments for the pizza.
+
+    pizza.Size = updatedPizza.Size;
+
+
+    pizza.PizzaCondiments.Clear();// Clear existing condiments
+
+    foreach(var pc in updatedPizza.CondimentIds)
+    {
+        pizza.PizzaCondiments.Add(new PizzaCondiment
+        { 
+            PizzaId = pizza.PizzaId,
+            CondimentId = pc
+        });
+    }
+
+//Step 3: Calculate the new base price of the pizza based on the updated size
+var newPizzaBasePrice = _dbContext.Pizzas.Where(p => p.Size == updatedPizza.Size)
+                                         .Select(pizzaSize => pizzaSize.BasePrice)
+                                         .FirstOrDefault();     
+//No, you cannot directly use .BasePrice after .Where() because the .Where() method returns a collection (IQueryable<Pizza>), even if it contains only one item. 
+//This means the result is still a sequence, not a single object, and you can't directly access a property like .BasePrice on the sequence.
+
+
+// If no matching size is found, handle the case (e.g., set to 0 or log an error)
+if (newPizzaBasePrice == 0)
+{
+    // Handle the edge case where the size is invalid
+    throw new Exception($"Base price for size '{updatedPizza.Size}' not found in database.");
+}
+
+var newPizzaCondimentCost = updatedPizza.CondimentIds.Sum(condimentId => _dbContext.Condiments.First(c => c.CondimentId == condimentId).Cost);
+// so you dont have to take the sum of condimentID directly you can just take the sum of whatever this is _dbContext.Condiments.First(c => c.CondimentId == condimentId).Cost) 
+
+
+// Step 3.2: Calculate the total cost of the pizza
+var newPizzaTotal = newPizzaBasePrice + newPizzaCondimentCost;
+
+pizza.Size = updatedPizza.Size;
+pizza.BasePrice = newPizzaBasePrice;
+
+  // Update order total
+    order.TotalAmount = order.TotalAmount - previousPizzaTotal + newPizzaTotal;
+
+_dbContext.SaveChanges();
+
+
+ var response = new
+    {
+        UpdatedPizza = new
+        {
+            pizza.PizzaId,
+            pizza.Size,
+            pizza.BasePrice,
+            Condiments = pizza.PizzaCondiments.Select(pc => new 
+            {
+                pc.CondimentId,
+                pc.Condiment.CondimentName
+            })
+        },
+        NewOrderTotal = order.TotalAmount
+    };
+    return Ok(response);
+}
+
     }
 
 }
 
-
-
+//12-25 1001 for tomorrow we have to actuall ytest to see if this update for pizza within order works both front end an backend 
+//also based off what we return we have to figure out proper structure ofw hat to use out of that to actually update the state of hte updated pizza within the list of orders component 
+//where the edit pizza was iniitally called have to do the use navigate and what not 
+    
 
